@@ -25,7 +25,4 @@ uv run python visualise_data.py
 ```
 You should be now able to see a message in your terminal.
 
-## Development
 
-To add a feature create a new branch using `git checkout -b <your_branch_name>`  
-After creating the branch, you can create a merge/pull request.
