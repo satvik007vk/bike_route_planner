@@ -12,11 +12,15 @@ Now in your terminal, make sure you are in the project folder: path_to_project_f
 If not, you can just run the command `cd path_to_project_folder/bike_route_planner` 
 
 Next you need to run the command  
-`uv sync`  
+```bash
+uv sync
+```
 Every package will be installed automatically once you run the command.
 
 Finally run the command:
-`uv run python visualise_data.py`
+```bash
+uv run python visualise_data.py
+```
 You should be now able to see a message in your terminal.
 
 ## Development
