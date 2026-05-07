@@ -5,7 +5,9 @@
 - IDE (VS code, Pycharm etc.)
 
 ## Once you have installed these you can open the folder where you want to have the project repository in your IDE. And then run the following command in your terminal:
-`git clone https://github.com/satvik007vk/bike_route_planner.git`  
+```bash
+git clone https://github.com/satvik007vk/bike_route_planner.git`  
+```
 Yay! you have the repository cloned now!
  
 Now in your terminal, make sure you are in the project folder: path_to_project_folder/bike_route_planner
