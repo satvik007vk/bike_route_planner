@@ -1,17 +1,20 @@
 ## To run the code from this repository you should have the following installed:
 - [git](https://git-scm.com/install/windows)
 - [python 3.13](https://www.python.org/downloads/release/python-3130/)
-- ['uv' environment manager](https://docs.astral.sh/uv/getting-started/installation/)
+- [uv environment manager](https://docs.astral.sh/uv/getting-started/installation/)
 - IDE (VS code, Pycharm etc.)
 
-## Once you have installed these you can open the folder where you want to have the project repository in your IDE. And then run the following command:
-`git clone 
+## Once you have installed these you can open the folder where you want to have the project repository in your IDE. And then run the following command in your terminal:
+`git clone https://github.com/satvik007vk/bike_route_planner.git`
+Yay! you have the repository cloned now!
+ 
+Now in your terminal, make sure you are in the project folder: path_to_project_folder/bike_route_planner
+or you can just run the command `cd path_to_project_folder/bike_route_planner` 
 
-## Repository for the bike route planning app
-
-First you need to install the environment. Every package will be installed automatically once you run the command:
-
+Next you need to run the command
 `uv sync`
+Every package will be installed automatically once you run the command:
+
 
 For this you need `uv` abd `python 13` installed.
 
