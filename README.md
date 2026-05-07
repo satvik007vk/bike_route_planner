@@ -5,18 +5,17 @@
 - IDE (VS code, Pycharm etc.)
 
 ## Once you have installed these you can open the folder where you want to have the project repository in your IDE. And then run the following command in your terminal:
-`git clone https://github.com/satvik007vk/bike_route_planner.git`
+`git clone https://github.com/satvik007vk/bike_route_planner.git`  
 Yay! you have the repository cloned now!
  
 Now in your terminal, make sure you are in the project folder: path_to_project_folder/bike_route_planner
-or you can just run the command `cd path_to_project_folder/bike_route_planner` 
+If not, you can just run the command `cd path_to_project_folder/bike_route_planner` 
 
-Next you need to run the command
-`uv sync`
-Every package will be installed automatically once you run the command:
+Next you need to run the command  
+`uv sync`  
+Every package will be installed automatically once you run the command.
 
+## Development
 
-For this you need `uv` abd `python 13` installed.
-
-To add a feature create a new branch using `git checkout -b <your_branch_name>`
-After creating the branch, you can create a merge/pull request. gi
+To add a feature create a new branch using `git checkout -b <your_branch_name>`  
+After creating the branch, you can create a merge/pull request.
