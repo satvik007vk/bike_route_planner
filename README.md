@@ -10,19 +10,20 @@ git clone https://github.com/satvik007vk/bike_route_planner.git`
 ```
 Yay! you have the repository cloned now!
  
-Now in your terminal, make sure you are in the project folder: path_to_project_folder/bike_route_planner
-If not, you can just run the command `cd path_to_project_folder/bike_route_planner` 
+Now in your terminal, make sure you are in the project folder: <path_to_project_folder>/bike_route_planner
+If not, you can just run the command `cd <path_to_project_folder>/bike_route_planner` 
 
-Next you need to run the command  
+Next you need to run the command:  
 ```bash
 uv sync
 ```
-Every package will be installed automatically once you run the command.
+This will automatically install all the required packages
 
 Finally run the command:
 ```bash
 uv run python visualise_data.py
 ```
-You should be now able to see a message in your terminal.
+You should be now able to see a message in your terminal, that a map is loaded in your background.
+
 
 
