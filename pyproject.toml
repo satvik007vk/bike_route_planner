@@ -8,4 +8,6 @@ dependencies = [
     "contextily>=1.7.0",
     "geopandas>=1.1.3",
     "matplotlib>=3.10.9",
+    "ohsome>=0.4.0",
+    "ohsome-filter-to-sql>=0.8.0",
 ]
