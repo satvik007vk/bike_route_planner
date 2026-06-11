@@ -3,6 +3,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import logging
 import contextily as ctx
+from dataclasses import dataclass
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -11,33 +12,49 @@ logging.basicConfig(
 
 client = OhsomeClient()
 
-filter_bike_paths_without_dooring_risk = """
-(highway=cycleway
-or bicycle=designated
-or cycleway=track
-or bicycle_road=yes
-or cycleway=lane
-or cycleway=shared_lane
-or highway=path and bicycle=designated)
-and not (parking=lane
-or parking=parallel)
-"""
+@dataclass(frozen=True)
+class BikePathFilter:
+    name: str
+    query: str
 
-filter_bike_paths_without_tram_lines = """
-highway=cycleway
-or bicycle=designated
-or cycleway=track
-or bicycle_road=yes
-and railway!=tram
-and not (railway=tram)
-"""
+class BikePathFilters:
+    """Central place for OHsome bike infrastructure filters."""
 
-filter_bike_paths_without_traffic= """
-highway=cycleway
-or bicycle=designated
-or cycleway=track
-or bicycle_road=yes
-"""
+    WITHOUT_DOORING_RISK = BikePathFilter(
+        name="Bike Paths Without Dooring Risk",
+        query="""
+        (highway=cycleway
+        or bicycle=designated
+        or cycleway=track
+        or bicycle_road=yes
+        or cycleway=lane
+        or cycleway=shared_lane
+        or highway=path and bicycle=designated)
+        and not (parking=lane
+        or parking=parallel)
+        """
+    )
+
+    WITHOUT_TRAM_LINES = BikePathFilter(
+        name="Bike Paths Without Tram Lines",
+        query="""
+        (highway=cycleway
+        or bicycle=designated
+        or cycleway=track
+        or bicycle_road=yes)
+        and railway!=tram
+        """
+    )
+
+    WITHOUT_TRAFFIC = BikePathFilter(
+        name="Bike Paths Without Traffic",
+        query="""
+        highway=cycleway
+        or bicycle=designated
+        or cycleway=track
+        or bicycle_road=yes
+        """
+    )
 
 def plot_osm_data(
     bbox,
@@ -69,7 +86,7 @@ def plot_osm_data(
 
     gdf = client.elements.geometry.post(
         bboxes=[bbox],
-        filter=ohsome_filter,
+        filter=ohsome_filter.query,
         timeout=60
     ).as_dataframe()
 
@@ -90,7 +107,7 @@ def plot_osm_data(
             source=ctx.providers.OpenStreetMap.Mapnik
         )
 
-        ax.set_title(f"Cycling Infrastructure")
+        ax.set_title(ohsome_filter.name)
         ax.set_axis_off()
         plt.show()
 
@@ -139,4 +156,4 @@ def bbox_from_location(user_location=(49.01131638439726, 8.411271801941517),
 
 if __name__ == "__main__":
     bbox=bbox_from_location(buffer_km=2)
-    plot_osm_data(bbox=bbox, ohsome_filter=filter_bike_paths_without_dooring_risk)
+    plot_osm_data(bbox=bbox, ohsome_filter=BikePathFilters.WITHOUT_TRAFFIC)
