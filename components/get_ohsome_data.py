@@ -6,7 +6,7 @@ import contextily as ctx
 from dataclasses import dataclass
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format = "%(asctime)s - %(levelname)s - %(message)s"
 )
 
@@ -81,8 +81,8 @@ def plot_osm_data(
     -------
     geopandas.GeoDataFrame
     """
-    logging.debug("Starting bike infrastructure query for bbox=%s", bbox)
-    logging.info("Sending request to ohsome API...")
+    logging.info("Starting bike infrastructure query for bbox=%s", bbox)
+    logging.info("Sending HTTPs request to ohsome API...")
 
     gdf = client.elements.geometry.post(
         bboxes=[bbox],
@@ -90,7 +90,7 @@ def plot_osm_data(
         timeout=60
     ).as_dataframe()
 
-    logging.debug("Received response with %s features", len(gdf))
+    logging.info("Received response with %s features", len(gdf))
 
 
     if plot and not gdf.empty:
@@ -111,7 +111,7 @@ def plot_osm_data(
         ax.set_axis_off()
         plt.show()
 
-    logging.debug("done")
+    logging.info("done")
     return gdf
 
 bbox = [8.385, 49.000, 8.415, 49.020]
@@ -155,5 +155,9 @@ def bbox_from_location(user_location=(49.01131638439726, 8.411271801941517),
 
 
 if __name__ == "__main__":
-    bbox=bbox_from_location(buffer_km=2)
-    plot_osm_data(bbox=bbox, ohsome_filter=BikePathFilters.WITHOUT_TRAFFIC)
+    user_location = (49.01131638439726, 8.411271801941517)
+    buffer_km = 2
+    ohsome_filter = BikePathFilters.WITHOUT_TRAFFIC
+
+    bbox = bbox_from_location(user_location=user_location, buffer_km=buffer_km)
+    plot_osm_data(bbox=bbox, ohsome_filter=ohsome_filter)
