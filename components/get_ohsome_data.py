@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from ohsome import OhsomeClient
 import geopandas as gpd
 import math
@@ -10,6 +12,8 @@ logging.basicConfig(
     level=logging.INFO,
     format = "%(asctime)s - %(levelname)s - %(message)s"
 )
+
+ROOT_DIR = Path(__file__).parent.parent
 
 client = OhsomeClient()
 
@@ -154,11 +158,33 @@ class FetchOSMData:
 
         return [west, south, east, north]
 
+    @staticmethod
+    def save_gdf(gdf, path=ROOT_DIR/"data/output/bike_paths.gpkg", driver="GPKG"):
+        """
+        Save a GeoDataFrame to a GeoPackage or GeoJSON file.
+
+        Parameters
+        ----------
+        gdf : geopandas.GeoDataFrame
+        path : str
+            Output file path. Use .gpkg for GeoPackage, .geojson for GeoJSON.
+        driver : str
+            "GPKG" or "GeoJSON"
+        """
+        if gdf.empty:
+            logging.warning("GeoDataFrame is empty, nothing saved.")
+            return
+
+        gdf_save = gdf.to_crs(epsg=4326) if gdf.crs and gdf.crs.to_epsg() != 4326 else gdf
+        gdf_save.to_file(path, driver=driver)
+        logging.info("Saved %s features to %s", len(gdf_save), path)
+
 
 if __name__ == "__main__":
     user_location = (49.01131638439726, 8.411271801941517)
-    buffer_km = 1
-    ohsome_filter = BikePathFilters.WITHOUT_DOORING_RISK
+    buffer_km = 30
+    ohsome_filter = BikePathFilters.WITHOUT_TRAM_LINES
     osm_obj = FetchOSMData
     bbox = osm_obj.bbox_from_location(user_location=user_location, buffer_km=buffer_km)
-    osm_obj.plot_osm_data(bbox=bbox, ohsome_filter=ohsome_filter)
+    gdf= osm_obj.plot_osm_data(bbox=bbox, ohsome_filter=ohsome_filter)
+    osm_obj.save_gdf(gdf, path=ROOT_DIR/"data/output/bike_paths_without_tram_lines_30km.gpkg")
