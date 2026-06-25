@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from enum import Enum                          # ← new import
 from ohsome import OhsomeClient
 import geopandas as gpd
 import math
@@ -17,6 +17,20 @@ ROOT_DIR = Path(__file__).parent.parent
 
 client = OhsomeClient()
 
+# ── Enum defined at module level so it can be imported/used anywhere ──────────
+class GeometryType(Enum):
+    LINE    = "line"
+    POINT   = "point"
+    POLYGON = "polygon"
+
+# Mapping lives next to the Enum — one place to update if types ever change
+GEOMETRY_FILTER = {
+    GeometryType.LINE:    {"LineString", "MultiLineString"},
+    GeometryType.POINT:   {"Point", "MultiPoint"},
+    GeometryType.POLYGON: {"Polygon", "MultiPolygon"},
+}
+#
+
 @dataclass(frozen=True)
 class BikePathFilter:
     name: str
@@ -29,11 +43,7 @@ class BikePathFilters:
         name="Bike Paths Without Dooring Risk",
         query="""
         (highway=cycleway
-        or bicycle=designated
-        or cycleway=track
-        or bicycle_road=yes
         or cycleway=lane
-        or cycleway=shared_lane
         or highway=path and bicycle=designated)
         and not (parking=lane
         or parking=parallel)
@@ -44,9 +54,7 @@ class BikePathFilters:
         name="Bike Paths Without Tram Lines",
         query="""
         (highway=cycleway
-        or bicycle=designated
-        or cycleway=track
-        or bicycle_road=yes)
+        or bicycle_road=yes)        
         and railway!=tram
         """
     )
@@ -60,8 +68,19 @@ class BikePathFilters:
         or bicycle_road=yes
         """
     )
+
+    FREE_PUBLIC_TOILETS = BikePathFilter(
+        name="Free Public Toilets",
+        query="amenity=toilets and (fee=no or fee=0)"
+    )
+
+    DRINKING_WATER = BikePathFilter(
+        name="Drinking Water",
+        query="amenity=drinking_water"
+    )
+
 class FetchOSMData:
-    def plot_osm_data(
+    def get_osm_data(
         bbox,
         ohsome_filter,
         time="2025-01-01",
@@ -119,7 +138,6 @@ class FetchOSMData:
         logging.info("done")
         return gdf
 
-    bbox = [8.385, 49.000, 8.415, 49.020]
 
 
     @staticmethod
@@ -159,21 +177,37 @@ class FetchOSMData:
         return [west, south, east, north]
 
     @staticmethod
-    def save_gdf(gdf, path=ROOT_DIR/"data/output/bike_paths.gpkg", driver="GPKG"):
-        """
-        Save a GeoDataFrame to a GeoPackage or GeoJSON file.
-
-        Parameters
-        ----------
-        gdf : geopandas.GeoDataFrame
-        path : str
-            Output file path. Use .gpkg for GeoPackage, .geojson for GeoJSON.
-        driver : str
-            "GPKG" or "GeoJSON"
-        """
+    def save_gdf(
+        gdf,
+        path=ROOT_DIR / "data/output/bike_paths.gpkg",
+        driver="GPKG",
+        geometry_type: GeometryType = GeometryType.LINE,   # ← Enum type hint + default
+    ):
         if gdf.empty:
             logging.warning("GeoDataFrame is empty, nothing saved.")
             return
+
+        # ← Enum lookup replaces the if/elif chain
+        allowed_types = GEOMETRY_FILTER.get(geometry_type)
+        if allowed_types is None:
+            raise ValueError(
+                f"Unsupported geometry_type: {geometry_type!r}. "
+                f"Choose from: {list(GeometryType)}"
+            )
+
+        gdf = gdf[gdf.geom_type.isin(allowed_types)]
+
+        if gdf.empty:
+            logging.warning(
+                "No %s geometries found after filtering, nothing saved.",
+                geometry_type.value
+            )
+            return
+
+        path = Path(path)
+        if path.exists():
+            path.unlink()
+            logging.info("Removed existing file at %s", path)
 
         gdf_save = gdf.to_crs(epsg=4326) if gdf.crs and gdf.crs.to_epsg() != 4326 else gdf
         gdf_save.to_file(path, driver=driver)
@@ -183,8 +217,12 @@ class FetchOSMData:
 if __name__ == "__main__":
     user_location = (49.01131638439726, 8.411271801941517)
     buffer_km = 30
-    ohsome_filter = BikePathFilters.WITHOUT_TRAM_LINES
+    ohsome_filter = BikePathFilters.FREE_PUBLIC_TOILETS
     osm_obj = FetchOSMData
+
     bbox = osm_obj.bbox_from_location(user_location=user_location, buffer_km=buffer_km)
-    gdf= osm_obj.plot_osm_data(bbox=bbox, ohsome_filter=ohsome_filter)
-    osm_obj.save_gdf(gdf, path=ROOT_DIR/"data/output/bike_paths_without_tram_lines_30km.gpkg")
+    gdf = osm_obj.get_osm_data(bbox=bbox, ohsome_filter=ohsome_filter)
+
+    filter_slug = ohsome_filter.name.lower().replace(" ", "_")
+    osm_obj.save_gdf(gdf, path=ROOT_DIR / f"data/output/{filter_slug}_{buffer_km}km.gpkg", geometry_type=GeometryType.POINT)
+    # e.g. → bike_paths_without_dooring_risk_30km.gpkg
